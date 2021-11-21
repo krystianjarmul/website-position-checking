@@ -13,7 +13,7 @@ class AbstractResultsRepository(ABC):
     """Abstract repository class for results."""
 
     @abstractmethod
-    def list(self, query: str):
+    def list(self, query: str) -> List[Result]:
         ...
 
 
@@ -24,7 +24,7 @@ class GoogleResultsRepository(AbstractResultsRepository):
         self._driver = driver
         self._search_url = search_url
 
-    def list(self, query) -> List[Result]:
+    def list(self, query):
         self._driver.get(f"{self._search_url}{query}")
 
         container = self._driver.find_element(By.ID, "rso")
@@ -37,3 +37,14 @@ class GoogleResultsRepository(AbstractResultsRepository):
             result = Result(title, url)
             results.append(result)
         return results
+
+
+class FakeResultsRepository(AbstractResultsRepository):
+
+    def __init__(self, results=None):
+        if results is None:
+            results = []
+        self.results = results
+
+    def list(self, query):
+        return self.results
