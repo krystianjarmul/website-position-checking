@@ -1,4 +1,7 @@
+from __future__ import annotations
+from enum import Enum
 from abc import ABC, abstractmethod
+from typing import List
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By as webdriver_By
@@ -7,22 +10,47 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.remote.webelement import WebElement
 
 
+class By(str, Enum):
+    ID = webdriver_By.ID
+    CLASS_NAME = webdriver_By.CLASS_NAME
+    TAG_NAME = webdriver_By.TAG_NAME
+
+
+class AbstractElement(ABC):
+    """Abstract Wrapper class for a web element."""
+
+    @abstractmethod
+    def find_element(self, by: By, value: str) -> Element:
+        ...
+
+    @abstractmethod
+    def find_elements(self, by: By, value: str) -> List[Element]:
+        ...
+
+    @abstractmethod
+    def get_attribute(self, name: str) -> str:
+        ...
+
+
 class AbstractDriver(ABC):
+    """Abstract wrapper class for a driver."""
 
     @abstractmethod
     def get(self, url: str):
         ...
 
     @abstractmethod
-    def find_element(self, by: str, value: str) -> WebElement:
+    def find_element(self, by: By, value: str) -> AbstractElement:
         ...
 
     @abstractmethod
-    def find_elements(self, by: str, value: str):
+    def find_elements(self, by: By, value: str) -> List[AbstractElement]:
         ...
 
 
 class Driver(AbstractDriver):
+    """Wrapper class for selenium driver."""
+
     def __init__(self, chromedriver_path: str):
         self._service = Service(chromedriver_path)
         self._options = Options()
@@ -35,27 +63,38 @@ class Driver(AbstractDriver):
         )
 
     def get(self, url):
-        return self._driver.get(url)
+        self._driver.get(url)
 
-    def find_element(self, by: str, value: str):
+    def find_element(self, by: By, value: str):
         try:
-            return self._driver.find_element(By(by), value)
+            return Element(self._driver.find_element(by, value))
         except AttributeError:
             return
 
-    def find_elements(self, by: str, value: str):
+    def find_elements(self, by: By, value: str):
         try:
-            return self._driver.find_elements(By(by), value)
+            return [
+                Element(element)
+                for element in self._driver.find_elements(by, value)
+            ]
         except AttributeError:
             return
 
 
-def By(value: str) -> webdriver_By:
-    if value == "id":
-        return webdriver_By.ID
-    elif value == "class":
-        return webdriver_By.CLASS_NAME
-    elif value == "tag":
-        return webdriver_By.TAG_NAME
-    else:
-        raise AttributeError
+class Element(AbstractElement):
+    """Wrapper class for selenium WebElement."""
+
+    def __init__(self, element: WebElement):
+        self._element = element
+
+    def find_element(self, by: By, value: str) -> Element:
+        return Element(self._element.find_element(by, value))
+
+    def find_elements(self, by: By, value: str) -> List[Element]:
+        return [
+            Element(element)
+            for element in self._element.find_elements(by, value)
+        ]
+
+    def get_attribute(self, name: str) -> str:
+        return self._element.get_attribute(name)

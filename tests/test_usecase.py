@@ -6,6 +6,7 @@ CHROMEDRIVER_PATH = "bin/chromedriver"
 
 driver = Driver(CHROMEDRIVER_PATH)
 
+
 def test_get_website_position_success(google_mock):
     position = get_website_position(
         query="travatar",

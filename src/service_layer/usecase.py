@@ -11,17 +11,17 @@ def get_website_position(
         driver: AbstractDriver,
         server: str = GOOGLE_SEARCH_URL,
 ) -> int:
-    driver.get(f"{server}{query}")
-    container = driver.find_element("id", "rso")
-    container_items = container.find_elements(By("class"), "g")
-
     page = Page()
-    for item in container_items:
-        title = item.find_element(By("tag"), "h3")
-        hyperlink = item.find_element(By("tag"), "a")
-        url = hyperlink.get_attribute("href")
 
-        result = Result(title=title.text, url=url)
+    driver.get(f"{server}{query}")
+    container = driver.find_element(By.ID, "rso")
+    container_items = container.find_elements(By.CLASS_NAME, "g")
+
+    for item in container_items:
+        result = Result(
+            title=item.find_element(By.TAG_NAME, "h3").get_attribute("text"),
+            url=item.find_element(By.TAG_NAME, "a").get_attribute("href")
+        )
         page.add_result(result)
 
     position = page.get_website_position(website)
