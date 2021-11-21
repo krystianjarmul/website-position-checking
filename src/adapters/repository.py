@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod, ABC
 from typing import List
 
-from src.adapters.driver import By
+from lib.driver import By
 from src.domain.model import Result
 
 GOOGLE_SEARCH_URL = "https://www.google.com/search?q="

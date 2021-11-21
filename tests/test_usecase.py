@@ -1,5 +1,5 @@
+from lib.driver import Driver
 from src.adapters.repository import GoogleResultsRepository
-from src.adapters.driver import Driver
 from src.service_layer.usecase import get_website_position
 
 TEST_URL = "http://127.0.0.1:1938/"
