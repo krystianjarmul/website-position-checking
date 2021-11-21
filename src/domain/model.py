@@ -1,19 +1,22 @@
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 
 
 @dataclass(frozen=True)
 class Result:
-    """Class representing a single search result."""
+    """Value Object Class representing a single search result."""
     title: str
     url: str
 
 
-@dataclass
 class Page:
-    """Class representing a single page of search results."""
-    number: int = field(default=1)
-    results: List[Result] = field(default_factory=list)
+    """Entity Class representing a single page of search results."""
+
+    def __init__(self, results: Optional[List[Result]] = None, num: int = 1):
+        if results is None:
+            results = []
+        self.results = results
+        self.number = num
 
     def get_website_position(self, website: str) -> int:
         try:
@@ -22,7 +25,13 @@ class Page:
             return -1
         return self.results.index(result)
 
-    def add_result(self, result: Result):
-        if result in self.results:
-            return
-        self.results.append(result)
+    def __repr__(self):
+        return f"Page {self.number}"
+
+    def __hash__(self):
+        return hash(self.number)
+
+    def __eq__(self, other):
+        if not isinstance(Page, other):
+            return False
+        return self.number == other.number

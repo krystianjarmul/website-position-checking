@@ -1,3 +1,4 @@
+from src.adapters.repository import GoogleResultsRepository
 from src.adapters.driver import Driver
 from src.service_layer.usecase import get_website_position
 
@@ -8,22 +9,18 @@ driver = Driver(CHROMEDRIVER_PATH)
 
 
 def test_get_website_position_success(google_mock):
+    repo = GoogleResultsRepository(driver=driver, search_url=TEST_URL)
     position = get_website_position(
-        query="travatar",
-        website="https://travatar.ai/",
-        server=TEST_URL,
-        driver=driver
+        website="https://travatar.ai/", query="travatar", repo=repo
     )
 
     assert position == 1
 
 
 def test_get_website_position_failed_if_website_not_in_results(google_mock):
+    repo = GoogleResultsRepository(driver=driver, search_url=TEST_URL)
     position = get_website_position(
-        query="travatar",
-        website="https://another.ai/",
-        server=TEST_URL,
-        driver=driver
+        website="https://another.ai/", query="travatar", repo=repo
     )
 
     assert position == -1
