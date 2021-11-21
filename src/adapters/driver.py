@@ -20,11 +20,11 @@ class AbstractElement(ABC):
     """Abstract Wrapper class for a web element."""
 
     @abstractmethod
-    def find_element(self, by: By, value: str) -> Element:
+    def find_element(self, by: By, value: str) -> AbstractElement:
         ...
 
     @abstractmethod
-    def find_elements(self, by: By, value: str) -> List[Element]:
+    def find_elements(self, by: By, value: str) -> List[AbstractElement]:
         ...
 
     @abstractmethod
@@ -40,11 +40,11 @@ class AbstractDriver(ABC):
         ...
 
     @abstractmethod
-    def find_element(self, by: By, value: str) -> AbstractElement:
+    def find_element(self, by: By, value: str) -> Element:
         ...
 
     @abstractmethod
-    def find_elements(self, by: By, value: str) -> List[AbstractElement]:
+    def find_elements(self, by: By, value: str) -> List[Element]:
         ...
 
 
@@ -65,20 +65,20 @@ class Driver(AbstractDriver):
     def get(self, url):
         self._driver.get(url)
 
-    def find_element(self, by: By, value: str):
+    def find_element(self, by, value):
         try:
             return Element(self._driver.find_element(by, value))
         except AttributeError:
             return
 
-    def find_elements(self, by: By, value: str):
+    def find_elements(self, by, value):
         try:
             return [
                 Element(element)
                 for element in self._driver.find_elements(by, value)
             ]
         except AttributeError:
-            return
+            return []
 
 
 class Element(AbstractElement):
@@ -87,14 +87,14 @@ class Element(AbstractElement):
     def __init__(self, element: WebElement):
         self._element = element
 
-    def find_element(self, by: By, value: str) -> Element:
+    def find_element(self, by, value) -> Element:
         return Element(self._element.find_element(by, value))
 
-    def find_elements(self, by: By, value: str) -> List[Element]:
+    def find_elements(self, by, value) -> List[Element]:
         return [
             Element(element)
             for element in self._element.find_elements(by, value)
         ]
 
-    def get_attribute(self, name: str) -> str:
+    def get_attribute(self, name):
         return self._element.get_attribute(name)
