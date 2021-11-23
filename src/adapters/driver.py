@@ -4,6 +4,7 @@ from enum import Enum
 from typing import List
 
 import bs4
+from retry import retry
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as webdriver_By
@@ -67,6 +68,7 @@ class Driver(AbstractDriver):
         )
         self.page_source = None
 
+    @retry(ConnectionError, tries=2, delay=2)
     def get(self, url):
         try:
             self._driver.get(url)

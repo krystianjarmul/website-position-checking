@@ -45,5 +45,3 @@ def test_driver_handle_connection_if_server_is_down(unavailable_server_url):
             match="Driver can't connect to given search engine server."
     ):
         driver.get(unavailable_server_url)
-
-# website is on another page
