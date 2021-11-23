@@ -5,25 +5,32 @@ from threading import Thread
 import pytest
 
 TEST_HOST = "127.0.0.1"
-TEST_PORT = 1938
+TEST_PORT = 1940
+TEST_URL = f"http://{TEST_HOST}:{TEST_PORT}/"
 HTML = """
-<div id="rso">
-    <div class="g">
-        <div class="UT76R">
-            <h3>Other</h3>
-            <a href="https://www.other.com/">other.com</a>
+<html>
+<head>
+</head>
+<body>
+    <div id="rso">
+        <div class="g">
+            <div class="UT76R">
+                <h3>Other</h3>
+                <a href="https://www.other.com/">other.com</a>
+            </div>
+        </div>
+        <div>
+            <span>unnecessarytag</span>
+        </div>
+        <div class="g">
+            <div class="UT76R">
+                <h3>Travatar</h3>
+                <a href="https://travatar.ai/">travatar.ai</a>
+            </div>
         </div>
     </div>
-    <div>
-        <span>unnecessarytag</span>
-    </div>
-    <div class="g">
-        <div class="UT76R">
-            <h3>Travatar</h3>
-            <a href="https://travatar.ai/">travatar.ai</a>
-        </div>
-    </div>
-</div>
+</body>
+</html>
 """
 
 
@@ -56,7 +63,7 @@ class MockServer:
 
 
 @pytest.fixture(scope="module", autouse=True)
-def google_mock():
+def mock_server():
     httpd = MockServer(TEST_HOST, TEST_PORT, GoogleSearchResultsHandler)
     try:
         httpd.start()
@@ -68,3 +75,13 @@ def google_mock():
 @pytest.fixture(scope="function")
 def html():
     return HTML
+
+
+@pytest.fixture(scope="function")
+def test_url():
+    return f"http://{TEST_HOST}:{TEST_PORT}/"
+
+
+@pytest.fixture(scope="function")
+def unavailable_server_url():
+    return f"https://thisserverdoesnteven.exist.forreal/"

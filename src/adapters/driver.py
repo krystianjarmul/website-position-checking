@@ -5,6 +5,7 @@ from typing import List
 
 import bs4
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as webdriver_By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -64,9 +65,16 @@ class Driver(AbstractDriver):
             options=self._options,
             service=self._service
         )
+        self.page_source = None
 
     def get(self, url):
-        self._driver.get(url)
+        try:
+            self._driver.get(url)
+            self.page_source = self._driver.page_source
+        except WebDriverException:
+            raise ConnectionError(
+                "Driver can't connect to given search engine server."
+            )
 
     def find_element(self, by, value):
         try:
@@ -89,6 +97,7 @@ class Element(AbstractElement):
 
     def __init__(self, element: WebElement):
         self._element = element
+        self.text = self._element.text
 
     def find_element(self, by, value) -> Element:
         return Element(self._element.find_element(by, value))
