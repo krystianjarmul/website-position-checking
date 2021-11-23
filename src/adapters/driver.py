@@ -3,11 +3,14 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
+import bs4
 from selenium import webdriver
 from selenium.webdriver.common.by import By as webdriver_By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.remote.webelement import WebElement
+
+CHROMEDRIVER_PATH = "bin/chromedriver"
 
 
 class By(str, Enum):
@@ -51,7 +54,7 @@ class AbstractDriver(ABC):
 class Driver(AbstractDriver):
     """Wrapper class for selenium driver."""
 
-    def __init__(self, chromedriver_path: str):
+    def __init__(self, chromedriver_path: str = CHROMEDRIVER_PATH):
         self._service = Service(chromedriver_path)
         self._options = Options()
         self._options.add_argument("--disable-extensions")
@@ -98,3 +101,49 @@ class Element(AbstractElement):
 
     def get_attribute(self, name):
         return self._element.get_attribute(name)
+
+
+class FakeDriver(AbstractDriver):
+    """Fake driver class for testing purpose."""
+
+    def __init__(self, html):
+        self.soup = bs4.BeautifulSoup(html, "html.parser")
+
+    def get(self, url: str):
+        pass
+
+    def find_element(self, by, value):
+        if by == By.ID:
+            return FakeElement(self.soup.find(id=value))
+        elif by == By.TAG_NAME:
+            return FakeElement(self.soup.find_all(value)[0])
+
+    def find_elements(self, by, value):
+        return [
+            FakeElement(element)
+            for element in self.soup.find_all(class_=value)
+        ]
+
+
+class FakeElement(AbstractElement):
+    """Fake element class for testing purpose."""
+
+    def __init__(self, element):
+        self._element = element
+
+    def find_element(self, by, value):
+        if by == By.ID:
+            return FakeElement(self._element.find(id=value))
+        elif by == By.TAG_NAME:
+            return FakeElement(self._element.find_all(value)[0])
+
+    def find_elements(self, by, value):
+        return [
+            FakeElement(element)
+            for element in self._element.find_all(class_=value)
+        ]
+
+    def get_attribute(self, name):
+        if name == "text":
+            return getattr(self._element, name)
+        return self._element[name]

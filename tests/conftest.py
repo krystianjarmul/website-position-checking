@@ -4,34 +4,37 @@ from threading import Thread
 
 import pytest
 
+TEST_HOST = "127.0.0.1"
+TEST_PORT = 1938
+HTML = """
+<div id="rso">
+    <div class="g">
+        <div class="UT76R">
+            <h3>Other</h3>
+            <a href="https://www.other.com/">other.com</a>
+        </div>
+    </div>
+    <div>
+        <span>unnecessarytag</span>
+    </div>
+    <div class="g">
+        <div class="UT76R">
+            <h3>Travatar</h3>
+            <a href="https://travatar.ai/">travatar.ai</a>
+        </div>
+    </div>
+</div>
+"""
+
 
 class GoogleSearchResultsHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        html = """
-        <div id="rso">
-            <div class="g">
-                <div class="UT76R">
-                    <h3>Other</h3>
-                    <a href="https://www.other.com/">other.com</a>
-                </div>
-            </div>
-            <div>
-                <span>unnecessarytag</span>
-            </div>
-            <div class="g">
-                <div class="UT76R">
-                    <h3>Travatar</h3>
-                    <a href="https://travatar.ai/">travatar.ai</a>
-                </div>
-            </div>
-        </div>
-        """
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-type", "text/html")
-        self.send_header("Content-Length", str(len(html)))
+        self.send_header("Content-Length", str(len(HTML)))
         self.end_headers()
-        self.wfile.write(html.encode("utf-8"))
+        self.wfile.write(HTML.encode("utf-8"))
 
 
 class MockServer:
@@ -54,9 +57,14 @@ class MockServer:
 
 @pytest.fixture(scope="module", autouse=True)
 def google_mock():
-    httpd = MockServer("127.0.0.1", 1938, GoogleSearchResultsHandler)
+    httpd = MockServer(TEST_HOST, TEST_PORT, GoogleSearchResultsHandler)
     try:
         httpd.start()
         yield
     finally:
         httpd.stop()
+
+
+@pytest.fixture(scope="function")
+def html():
+    return HTML
